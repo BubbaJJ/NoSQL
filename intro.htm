@@ -1,0 +1,791 @@
+\begin{frame}{NoSQL}
+\protect\hypertarget{nosql}{}
+Uppstod när behovet att undvika data-duplicering slutade vara lika
+stort. No-SQL-databaser kan ur ett perspektiv anses göra det enklare för
+programmerare/systemutvecklare att arbeta med datalagring eftersom
+strukturen på datan bättre överensstämmer med hur man oftast hanterar
+data i programmeringskod. Det innebär att det ofta inte blir lika mycket
+jobb med att hantera mappningen av datan från databasen till källkoden
+och vice versa.
+\end{frame}
+
+\begin{frame}
+\begin{block}{Terminologi SQL vs MongoDB}
+\protect\hypertarget{terminologi-sql-vs-mongodb}{}
+\begin{longtable}[]{@{}ll@{}}
+\toprule
+SQL & MongoDB \\
+\midrule
+\endhead
+Table & Collection \\
+Row & Document \\
+Colums & Field \\
+Primary Key & ObjectId \\
+Index & Index \\
+Nested table or object & Embedded document \\
+Array & Array \\
+View & View \\
+\bottomrule
+\end{longtable}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\begin{block}{Några olika typer av NoSQL:}
+\protect\hypertarget{nuxe5gra-olika-typer-av-nosql}{}
+\begin{itemize}
+\tightlist
+\item
+  Key-value
+\item
+  Column
+\item
+  Graph
+\item
+  Document
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\begin{block}{Key-Value}
+\protect\hypertarget{key-value}{}
+Den enklaste typen av NoSQL. En Key-Value databas är i grunden en stor
+hash-tabell, \emph{kan liknas vid ett lexikon.} Varje datavärde kopplas
+till en unik nyckel \emph{(Key)} och databasen använder sen nyckeln för
+att lagra data \emph{(Value)} med hjälp av en lämplig hash-funktion.
+
+De flesta Key-Value databaser har endast stöd för enkla Read-, Update-
+och Deletekommandon. Detta innebär att för att ändra ett värde
+\emph{(helt eller delvis)} så måste all befintlig data för värdet
+skrivas över. I majoriteten av alla implementeringar hanteras läsning
+och/eller skrivning av ett värde som en atomisk \emph{(separat)} åtgärd.
+Det innebär att hela kommandot måste slutföras; annars återställs värdet
+till det ursprungliga värdet. Detta arbetssätt innebär också att om
+värdet som ska skrivas är stort kan det medföra att åtgärden tar lite
+längre tid att utföra.
+
+En Key-Value databas kan lagra en uppsättning av data i ett värde, vissa
+implementeringar har dock gränser för storleken på datan som kan lagras
+i varje värde.
+
+Key-Value databaser är optimerade för program som utför enkla uppslag
+med hjälp av en eller nycklar. När det kommer till system som behöver
+hämta data på flera olika platser med hjälp av nycklar och värden, till
+exempel koppla ihop data över flera tabeller, är en Key-Value databas
+ett mindre lämpligt val. Key-Value databaser är inte heller optimerade
+för situationer där frågor och/eller filtrering efter icke-nyckelvärden
+är en viktig funktion. Med en relationsdatabas går det till exempel
+hitta en post med hjälp av en WHERE-sats för att filtrera kolumner som
+inte är nyckelkolumner. En Key-Value databas däremot har vanligtvis inte
+den typen av sök- och filtreringsfunktion för värden, och om det finns
+så kräver det oftast en långsam genomsökning av samtliga värden.
+
+\begin{quote}
+\mbox{}%
+\hypertarget{key-nyckel}{%
+\paragraph{\texorpdfstring{Key
+\emph{(Nyckel)}}{Key (Nyckel) }}\label{key-nyckel}}
+
+Varje Key måste vara unik då den används för att identifiera varje
+individuellt Value. Kan vara, nästan, vad som helst; beroende på
+eventuella restriktioner från programvaran. \#\#\#\# Value
+\emph{(Värde)} Value är datan som lagras, alternativt en referens till
+den plats där datan lagras. Kan vara allt från en textsträng, lista, ett
+Key-Value par till ett objekt. Vissa programvaror tillåter att
+användaren specificerar datatypen för Value.
+\end{quote}
+
+\begin{figure}
+\centering
+\includegraphics{/Users/jimkaya/Repo/NoSQL/images/KeyValue.png}
+\caption{Key-Value databas}
+\end{figure}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\begin{block}{Column}
+\protect\hypertarget{column}{}
+En kolumndatabas lagrar data i kolumner och rader, likt ett excelark. En
+kolumndatabas kan i sin enklaste form liknas vid en relationsdatabas,
+åtminstone konceptuellt. Den verkliga kraften hos en kolumndatabas
+ligger i dess avormaliserade metod för att strukturera glesa data, som
+kommer från den kolumnorienterade metoden för att lagra data.
+
+Man kan tänka på en kolumndatabas som en tabell med rader och kolumner,
+men att kolumnerna är indelade i grupper som kallas
+\emph{kolumnfamiljer}. Varje kolumnfamilj innehåller en uppsättning
+kolumner som är logiskt relaterade och som i regel hämtas och/eller
+ändras som en enhet. Andra data som kan nås separat kan lagras i
+separata kolumnserier. I en kolumnserie kan nya kolumner läggas till
+dynamiskt, och en rad kan hantera null-värden. \emph{(dvs. en rad
+behöver inte ha ett värde för varje kolumn).}
+
+Till skillnad från en Key-Value databas eller en dokumentdatabas lagrar
+de flesta kolumndatabaser data fysiskt i nyckelordning, istället för att
+beräkna och tillämpa en hash. Radnyckeln anses vara det primära indexet
+och möjliggör nyckelbaserad åtkomst via en eller flera nycklar. Vissa
+implementeringar tillåter skapandet av sekundära index över flertalet
+kolumner i en kolumnfamilj, med hjälp av dessa sekundära index kan du
+hämta data baserat kolumnvärde istället för radnyckel.
+
+Vid lagring på disk lagras alla kolumner i en kolumnfamilj tillsammans i
+en och samma fil, med ett visst antal rader i varje fil. Vid stora
+datamängder skapar detta en prestandaförmån genom att minska mängden
+data som behöver läsas från disken när endast ett fåtal kolumner
+efterfrågas tillsammans åt gången.
+
+Läs- och skrivåtgärder för en rad är vanligtvis atomiska inom en enda
+kolumnfamilj, vissa implementeringar möjliggör dock atomicitet över hela
+raden; som sträcker sig över flera kolumnfamiljer.
+
+\begin{quote}
+\mbox{}%
+\hypertarget{kort-summering}{%
+\paragraph{Kort summering}\label{kort-summering}}
+
+\begin{itemize}
+\tightlist
+\item
+  Bygger på rader och kolumner.
+\item
+  Kolumner kan grupperas till ``kolumnfamiljer''.
+\item
+  Kolumner är logiskt relaterade och läses/ändras som en enhet.
+\item
+  Lagring sker i nyckelordning.
+\item
+  Rader kan hantera null-värden.
+\item
+  Lagring på disk delas upp i mindre filer med ett antal rader i varje.
+\end{itemize}
+\end{quote}
+
+\begin{figure}
+\centering
+\includegraphics{/Users/jimkaya/Repo/NoSQL/images/Column.png}
+\caption{Kolumndatabas}
+\end{figure}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\begin{block}{Graph}
+\protect\hypertarget{graph}{}
+En grafdatabas hanterar två typer av information, \textbf{\emph{noder}}
+och \textbf{\emph{kanter}}. Noder representerar \emph{entiteter} medans
+kanter anger \emph{relationerna mellan entiteterna}. Både noder och
+kanter kan ha egenskaper som innehåller information om den specifika
+noden eller kanten, vilket liknar kolumnerna i en tabell. Kanter kan
+även ha en riktning som visar typen av relation.
+
+Huvudsyftet med en grafdatabas är att applikationer så effektivt som
+möjligt ska kunna köra queries som passerar nätverket, beståendes av
+noder och kanter, och analysera relationerna mellan entiteterna.
+
+Diagrammet nedan visar en grafdatabas för personaldata inom en
+organisation. Medarbetare och avdelningar är noder \emph{(entiteter)},
+och kanterna visar på rapporteringsvägar samt vid vilken avdelning
+medarbetarna arbetar. I diagrammet visar pilarna vid kanterna riktningen
+för varje relation.
+
+\begin{figure}
+\centering
+\includegraphics{/Users/jimkaya/Repo/NoSQL/images/Graph.png}
+\caption{Grafdatabas}
+\end{figure}
+
+Strukturen ovan gör det enkelt att köra queries som ``Hitta alla
+medarbetare som rapporterar direkt eller indirekt till Sarah'' samt
+``Vem arbetar på samma avdelning som John?'' I stora grafer med många
+noder och kanter möjliggör det utförandet av komplexa analyser; snabbt
+och effektivt.
+
+\begin{quote}
+\mbox{}%
+\hypertarget{kort-summering-1}{%
+\paragraph{Kort summering}\label{kort-summering-1}}
+
+\begin{itemize}
+\tightlist
+\item
+  Grafdatabas hanterar två typer av information.
+\item
+  Noder: Entiteter
+\item
+  Kanter: Relation mellan entiteter.
+\item
+  Effektivt för komplexa analyser.
+\end{itemize}
+\end{quote}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\begin{block}{Document}
+\protect\hypertarget{document}{}
+En dokumentdatabas består av en uppsättning namngivna fält med
+tillhörande datavärde, detta lagras i det som kallas \emph{dokument}.
+Denna typ av databas lagrar som regel data i form av JSON-dokument.
+Värden som lagras kan vara komplexa och innehålla allt ifrån ett tal
+till ett sammansatt element; till exempel en lista eller samling.
+
+Fälten i ett dokument kan kodas på en mängd olika sätt, till exempel:
+XML, YAML, JSON, BSON eller till och med som oformaterad text. Dessa
+fält i dokumentet blir synliga för systemet som hanterar databasen och
+gör det möjligt för en applikation att fråga efter, och filtrera, data
+med hjälp av värdena i varje fält.
+
+En av de stora fördelarna med en dokumentdatabas är att den inte kräver
+att alla dokument ska samma struktur. Istället för att använda ett
+databasschema för att designa databasen (vilket man gör med
+relationsdatabaser) används dokument för att beskriva vilken data som
+ska lagras i dokumentdatabasen. Enkelt förklarat kan man likna dokument
+i dokumentdatabaser vid objekt i programmeringens värld. Detta leder
+till en enorm flexibilitet vid skapandet av dokument och möjliggör
+lagring av olika data i dokument, som svar på till exempel ändringar i
+affärskraven.
+
+Ett dokument innehåller vanligtvis all data för en entitet, till exempel
+information om en kund, en order eller en kombination av båda. Man kan i
+alltså ett dokument samla information som annars skulle vara utspridd
+över flera tabeller i en relationsdatabas.
+
+Det är även möjligt att hämta dokument med hjälp av en dokumentnyckel.
+Dokumentnyckeln är en unik identifierare för dokumentet, som ofta är
+hash-formaterat, och som hjälper till att fördela data jämnt. Vissa
+dokumentdatabaser skapar dokumentnyckeln automatiskt medans andra
+tillåter dig att ange ett attribut för dokumentet som ska användas som
+nyckel. Det är även möjligt att köra queries mot ett dokument; baserat
+på värdet för ett eller flera fält.
+
+Det finns även dokumentdatabaser som stöder indexering för att
+underlätta snabb sökning efter ett dokument; baserat på ett eller flera
+indexerade fält.
+
+Flertalet dokumentdatabaser har stöd för uppdateringar på plats, detta
+gör det möjligt att ändra värdena i specifika fält i ett dokument utan
+att hela dokumentet behöver skrivas om. Vanligtvis är läs- och
+skrivåtgärder över flera fält i ett dokument atomiska åtgärder.
+
+\begin{quote}
+\mbox{}%
+\hypertarget{kort-summering-2}{%
+\paragraph{Kort summering:}\label{kort-summering-2}}
+
+\begin{itemize}
+\tightlist
+\item
+  Data lagras i flexibla ``dokument''.
+\item
+  .json liknande format.
+\item
+  Innehållet i varje dokument kan variera beroende på behovet.
+\item
+  Datastrukturen kan förändras.
+\item
+  Mappar data mot objekt i applikationer.
+\item
+  Flexibelt och skalbart.
+\end{itemize}
+\end{quote}
+
+\begin{figure}
+\centering
+\includegraphics{/Users/jimkaya/Repo/NoSQL/images/Document.png}
+\caption{Dokumentdatabas}
+\end{figure}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\begin{block}{Collection}
+\protect\hypertarget{collection}{}
+\begin{itemize}
+\tightlist
+\item
+  NoSQL's version av tabeller.
+\item
+  Behöver inte schema.
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Behöver inte samma fält och/eller struktur.
+  \item
+    Anpassas efter användarens behov
+  \item
+    Kombinera objekt om dem ska användas tillsammans.
+  \item
+    Använd aggregation.
+  \item
+    Join vid insert men bör inte användas vid select.
+  \end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\begin{block}{Exempel - Blogg}
+\protect\hypertarget{exempel---blogg}{}
+\begin{itemize}
+\tightlist
+\item
+  Varje post ska ha title, description och URL.
+\item
+  Varje post kan ha en eller flera taggar.
+\item
+  Varje post ska ha namnet på den som skrev det, samt totalt antal
+  likes.
+\item
+  Varje post kan ha kommentarer, 0-*.
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Dessa ska innehålla
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Användarnamn
+    \item
+      Kommentar
+    \item
+      Tidpunkt
+    \item
+      Likes
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\begin{block}{Relationsdatabas (T.ex. MySQL)}
+\protect\hypertarget{relationsdatabas-t.ex.-mysql}{}
+\begin{figure}
+\centering
+\includegraphics{/Users/jimkaya/Repo/NoSQL/images/SQLoverview.png}
+\caption{Relationell tabell}
+\end{figure}
+
+\begin{itemize}
+\tightlist
+\item
+  3 tabeller
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{Kommentarer}
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Comment\_id
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Kommentarens unika id
+      \end{itemize}
+    \item
+      Post\_id
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Id för det inlägg som kommentaren tillhör
+      \end{itemize}
+    \item
+      By\_user
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Vilken användare som skrev kommentaren
+      \end{itemize}
+    \item
+      Message
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Den text som kommentaren består av
+      \end{itemize}
+    \item
+      Data\_time
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Tidpunkt som kommentaren skrevs
+      \end{itemize}
+    \item
+      likes
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Antal likes som kommentaren har fått
+      \end{itemize}
+    \end{itemize}
+  \item
+    \textbf{Posts}
+
+    \begin{itemize}
+    \tightlist
+    \item
+      id
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Inläggets unika id
+      \end{itemize}
+    \item
+      title
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Inläggets titel
+      \end{itemize}
+    \item
+      description
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Beskrivning av inlägget
+      \end{itemize}
+    \item
+      url
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Länk till inlägget
+      \end{itemize}
+    \item
+      likes
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Antal likes som inlägget har fått
+      \end{itemize}
+    \item
+      Post\_by
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Vem som postade inlägget
+      \end{itemize}
+    \end{itemize}
+  \item
+    \textbf{Taggar}
+
+    \begin{itemize}
+    \tightlist
+    \item
+      id
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Taggens unika id
+      \end{itemize}
+    \item
+      Post\_id
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Id för det inlägg som taggen tillhör
+      \end{itemize}
+    \item
+      tag
+
+      \begin{itemize}
+      \tightlist
+      \item
+        Den text som taggen består av
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{block}{Dokumentdatabas (T.ex. MongoDB)}
+\protect\hypertarget{dokumentdatabas-t.ex.-mongodb}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+  \FunctionTok{\{}
+  \DataTypeTok{"\_id"}\FunctionTok{:} \StringTok{"POST\_ID"}\FunctionTok{,}                   \ErrorTok{//} \ErrorTok{Inläggets} \ErrorTok{unika} \ErrorTok{id}
+  \DataTypeTok{"title"}\FunctionTok{:} \StringTok{"TITLE\_OF\_POST"}\FunctionTok{,}           \ErrorTok{//} \ErrorTok{Inläggets} \ErrorTok{titel}
+  \DataTypeTok{"description"}\FunctionTok{:} \StringTok{"POST\_DESCRIPTION"}\FunctionTok{,}  \ErrorTok{//} \ErrorTok{Beskrivning} \ErrorTok{av} \ErrorTok{inlägget}
+  \DataTypeTok{"by"}\FunctionTok{:} \StringTok{"POST\_BY"}\FunctionTok{,}                    \ErrorTok{//} \ErrorTok{Vem} \ErrorTok{som} \ErrorTok{postade} \ErrorTok{inlägget}
+  \DataTypeTok{"url"}\FunctionTok{:} \StringTok{"URL\_OF\_POST"}\FunctionTok{,}               \ErrorTok{//} \ErrorTok{Länk} \ErrorTok{till} \ErrorTok{inlägget}
+  \DataTypeTok{"tags"}\FunctionTok{:} \StringTok{"[TAG1, TAG2, TAG3]"}\FunctionTok{,}       \ErrorTok{//} \ErrorTok{Taggar} \ErrorTok{som} \ErrorTok{hör} \ErrorTok{till} \ErrorTok{inlägget}
+  \DataTypeTok{"likes"}\FunctionTok{:} \StringTok{"TOTAL\_LIKES"}\FunctionTok{,}             \ErrorTok{//} \ErrorTok{Antal} \ErrorTok{likes} \ErrorTok{som} \ErrorTok{inlägget} \ErrorTok{har} \ErrorTok{fått}
+  \DataTypeTok{"comments"}\FunctionTok{:} \OtherTok{[}                       \ErrorTok{//} \ErrorTok{En} \ErrorTok{samling} \ErrorTok{av} \ErrorTok{eventuella} \ErrorTok{kommentarer}
+    \FunctionTok{\{}
+      \DataTypeTok{"user"}\FunctionTok{:} \StringTok{"COMMENT\_BY"}\FunctionTok{,}           \ErrorTok{//} \ErrorTok{Vilken} \ErrorTok{användare} \ErrorTok{som} \ErrorTok{skrev} \ErrorTok{kommentaren}
+      \DataTypeTok{"message"}\FunctionTok{:} \StringTok{"TEXT"}\FunctionTok{,}              \ErrorTok{//} \ErrorTok{Den} \ErrorTok{text} \ErrorTok{som} \ErrorTok{kommentaren} \ErrorTok{består} \ErrorTok{av}
+      \DataTypeTok{"dateCreated"}\FunctionTok{:} \StringTok{"DATE\_TIME"}\FunctionTok{,}     \ErrorTok{//} \ErrorTok{Tidpunkt} \ErrorTok{som} \ErrorTok{kommentaren} \ErrorTok{skrevs}
+      \DataTypeTok{"like"}\FunctionTok{:} \StringTok{"LIKES"}                 \ErrorTok{//} \ErrorTok{Antal} \ErrorTok{likes} \ErrorTok{som} \ErrorTok{kommentaren} \ErrorTok{har} \ErrorTok{fått}
+    \FunctionTok{\}}\OtherTok{,}
+    \FunctionTok{\{}
+      \DataTypeTok{"user"}\FunctionTok{:} \StringTok{"COMMENT\_BY"}\FunctionTok{,}           \ErrorTok{//} \ErrorTok{Vilken} \ErrorTok{användare} \ErrorTok{som} \ErrorTok{skrev} \ErrorTok{kommentaren}
+      \DataTypeTok{"message"}\FunctionTok{:} \StringTok{"TEXT"}\FunctionTok{,}              \ErrorTok{//} \ErrorTok{Den} \ErrorTok{text} \ErrorTok{som} \ErrorTok{kommentaren} \ErrorTok{består} \ErrorTok{av}
+      \DataTypeTok{"dateCreated"}\FunctionTok{:} \StringTok{"DATE\_TIME"}\FunctionTok{,}     \ErrorTok{//} \ErrorTok{Tidpunkt} \ErrorTok{som} \ErrorTok{kommentaren} \ErrorTok{skrevs}
+      \DataTypeTok{"like"}\FunctionTok{:} \StringTok{"LIKES"}                 \ErrorTok{//} \ErrorTok{Antal} \ErrorTok{likes} \ErrorTok{som} \ErrorTok{kommentaren} \ErrorTok{har} \ErrorTok{fått}
+    \FunctionTok{\}}
+  \OtherTok{]}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{itemize}
+\tightlist
+\item
+  En collection med ett dokument istället för 3 tabeller.
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{Post}
+  \item
+    All data lagras i samma ``dokument''.
+  \item
+    Allt hör till samma post och behöver inte användas på flera ställen.
+  \item
+    En kommentar hör till exemepel till en specifik post.
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Ingen annat dokument behöver innehålla den specifika kommentaren.
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{block}{Exempel - Kommandon MongoDB}
+\protect\hypertarget{exempel---kommandon-mongodb}{}
+\end{block}
+
+\begin{block}{Visa alla databaser}
+\protect\hypertarget{visa-alla-databaser}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\ErrorTok{show} \ErrorTok{dbs}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Visa aktuell databas}
+\protect\hypertarget{visa-aktuell-databas}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\ErrorTok{db}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Skapa eller byt databas}
+\protect\hypertarget{skapa-eller-byt-databas}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\ErrorTok{use} \OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Radera databas}
+\protect\hypertarget{radera-databas}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.dropDatabase()}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Skapa collection}
+\protect\hypertarget{skapa-collection}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.createCollection(}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{)}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Visa collections}
+\protect\hypertarget{visa-collections}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\ErrorTok{show} \ErrorTok{collections}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Skapa dokument}
+\protect\hypertarget{skapa-dokument}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.insert(}\FunctionTok{\{}
+  \ErrorTok{title}\FunctionTok{:} \ErrorTok{\textquotesingle{}No{-}SQL} \ErrorTok{Demo\textquotesingle{}}\FunctionTok{,}
+  \ErrorTok{category}\FunctionTok{:} \ErrorTok{\textquotesingle{}Education\textquotesingle{}}\FunctionTok{,}
+  \ErrorTok{tags}\FunctionTok{:} \OtherTok{[}\ErrorTok{\textquotesingle{}NoSQL\textquotesingle{}}\OtherTok{,} \ErrorTok{\textquotesingle{}Database\textquotesingle{}}\OtherTok{]}\FunctionTok{,}
+  \ErrorTok{user}\FunctionTok{:} \FunctionTok{\{}
+    \ErrorTok{name}\FunctionTok{:} \ErrorTok{\textquotesingle{}Eva} \ErrorTok{Hagner\textquotesingle{}}\FunctionTok{,}
+    \ErrorTok{status}\FunctionTok{:} \ErrorTok{\textquotesingle{}Teacher\textquotesingle{}}
+  \FunctionTok{\},}
+  \ErrorTok{students}\FunctionTok{:} \DecValTok{100}\FunctionTok{,}
+  \ErrorTok{date}\FunctionTok{:} \ErrorTok{Date()}
+\FunctionTok{\}}\ErrorTok{)}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Skapa flera dokument}
+\protect\hypertarget{skapa-flera-dokument}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.insertMany(}\OtherTok{[}
+  \FunctionTok{\{}
+    \ErrorTok{title}\FunctionTok{:} \ErrorTok{\textquotesingle{}Document} \ErrorTok{One\textquotesingle{}}\FunctionTok{,}
+    \ErrorTok{category}\FunctionTok{:} \ErrorTok{\textquotesingle{}EdUcation.\textquotesingle{}}\FunctionTok{,}
+    \ErrorTok{views}\FunctionTok{:} \DecValTok{23}\FunctionTok{,}
+    \ErrorTok{date}\FunctionTok{:} \ErrorTok{Date()}
+  \FunctionTok{\}}\OtherTok{,}
+  \FunctionTok{\{}
+    \ErrorTok{title}\FunctionTok{:} \ErrorTok{\textquotesingle{}DocumentTwo\textquotesingle{}}\FunctionTok{,}
+    \ErrorTok{category}\FunctionTok{:} \ErrorTok{\textquotesingle{}Edumacation\textquotesingle{}}\FunctionTok{,}
+    \ErrorTok{views}\FunctionTok{:} \DecValTok{2}\FunctionTok{,}
+    \ErrorTok{date}\FunctionTok{:} \ErrorTok{Date()}
+  \FunctionTok{\}}\OtherTok{,}
+  \FunctionTok{\{}
+    \ErrorTok{title}\FunctionTok{:} \ErrorTok{\textquotesingle{}Document} \ErrorTok{Three\textquotesingle{}}\FunctionTok{,}
+    \ErrorTok{category}\FunctionTok{:} \ErrorTok{\textquotesingle{}Education\textquotesingle{}}\FunctionTok{,}
+    \ErrorTok{views}\FunctionTok{:} \DecValTok{56}\FunctionTok{,}
+    \ErrorTok{date}\FunctionTok{:} \ErrorTok{Date()}
+  \FunctionTok{\}}
+\OtherTok{]}\ErrorTok{)}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Uppdatera dokument}
+\protect\hypertarget{uppdatera-dokument}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.update(}\FunctionTok{\{} \ErrorTok{title}\FunctionTok{:} \ErrorTok{\textquotesingle{}DocumentTwo\textquotesingle{}} \FunctionTok{\}}\ErrorTok{,}
+\FunctionTok{\{}
+  \ErrorTok{title}\FunctionTok{:} \ErrorTok{\textquotesingle{}Document} \ErrorTok{Two\textquotesingle{}}\FunctionTok{,}
+  \ErrorTok{category}\FunctionTok{:} \ErrorTok{\textquotesingle{}Education\textquotesingle{}}
+  \ErrorTok{date:} \ErrorTok{Date()}
+\FunctionTok{\}}\ErrorTok{,}
+\FunctionTok{\{}
+  \ErrorTok{upsert}\FunctionTok{:} \KeywordTok{true} \ErrorTok{//} \ErrorTok{Uppdatera}\FunctionTok{,} \ErrorTok{eller} \ErrorTok{skapa} \ErrorTok{om} \ErrorTok{dokumentet} \ErrorTok{inte} \ErrorTok{existerar.}
+\FunctionTok{\}}\ErrorTok{)}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Uppdatera specifikt fält}
+\protect\hypertarget{uppdatera-specifikt-fuxe4lt}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.update(}\FunctionTok{\{} \ErrorTok{title}\FunctionTok{:} \ErrorTok{\textquotesingle{}Document} \ErrorTok{One\textquotesingle{}} \FunctionTok{\}}\ErrorTok{,}
+\FunctionTok{\{}
+  \ErrorTok{$set}\FunctionTok{:} \FunctionTok{\{}
+    \ErrorTok{category}\FunctionTok{:} \ErrorTok{\textquotesingle{}Education\textquotesingle{}}
+  \FunctionTok{\}}
+\FunctionTok{\}}\ErrorTok{)}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Döpa om fält}
+\protect\hypertarget{duxf6pa-om-fuxe4lt}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.update(}\FunctionTok{\{} \ErrorTok{title}\FunctionTok{:} \ErrorTok{\textquotesingle{}No{-}SQL} \ErrorTok{Demo\textquotesingle{}} \FunctionTok{\}}\ErrorTok{,}
+\FunctionTok{\{}
+  \ErrorTok{$rename}\FunctionTok{:} \FunctionTok{\{}
+    \ErrorTok{user}\FunctionTok{:} \ErrorTok{\textquotesingle{}codic\textquotesingle{}}
+  \FunctionTok{\}}
+\FunctionTok{\}}\ErrorTok{)}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Radera dokument}
+\protect\hypertarget{radera-dokument}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.remove(}\FunctionTok{\{} \ErrorTok{title}\FunctionTok{:} \ErrorTok{\textquotesingle{}Document} \ErrorTok{Three\textquotesingle{}}\FunctionTok{\}}\ErrorTok{)}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Hämta alla dokument}
+\protect\hypertarget{huxe4mta-alla-dokument}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.find()}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Hämta alla dokument - med formattering}
+\protect\hypertarget{huxe4mta-alla-dokument---med-formattering}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.find().pretty()}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Hitta dokument}
+\protect\hypertarget{hitta-dokument}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.find(}\FunctionTok{\{}\ErrorTok{category}\FunctionTok{:} \ErrorTok{\textquotesingle{}Education\textquotesingle{}}\FunctionTok{\}}\ErrorTok{)}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Räkna dokument}
+\protect\hypertarget{ruxe4kna-dokument}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.find().count()}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+
+\begin{block}{Större \& mindre än}
+\protect\hypertarget{stuxf6rre-mindre-uxe4n}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.find(}\FunctionTok{\{} \ErrorTok{views}\FunctionTok{:} \FunctionTok{\{} \ErrorTok{$gt}\FunctionTok{:} \DecValTok{30} \FunctionTok{\}} \FunctionTok{\}}\ErrorTok{)}   \ErrorTok{//} \ErrorTok{Större} \ErrorTok{än}
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.find(}\FunctionTok{\{} \ErrorTok{views}\FunctionTok{:} \FunctionTok{\{} \ErrorTok{$gte}\FunctionTok{:} \DecValTok{30} \FunctionTok{\}} \FunctionTok{\}}\ErrorTok{)}  \ErrorTok{//} \ErrorTok{Större} \ErrorTok{än} \ErrorTok{eller} \ErrorTok{lika} \ErrorTok{med}
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.find(}\FunctionTok{\{} \ErrorTok{views}\FunctionTok{:} \FunctionTok{\{} \ErrorTok{$lt}\FunctionTok{:} \DecValTok{10} \FunctionTok{\}} \FunctionTok{\}}\ErrorTok{)}   \ErrorTok{//} \ErrorTok{Mindre} \ErrorTok{än}
+\OtherTok{[}\ErrorTok{databasnamn}\OtherTok{]}\ErrorTok{.}\OtherTok{[}\ErrorTok{collectionnamn}\OtherTok{]}\ErrorTok{.find(}\FunctionTok{\{} \ErrorTok{views}\FunctionTok{:} \FunctionTok{\{} \ErrorTok{$lte}\FunctionTok{:} \DecValTok{10} \FunctionTok{\}} \FunctionTok{\}}\ErrorTok{)}  \ErrorTok{//} \ErrorTok{Mindre} \ErrorTok{än} \ErrorTok{eller} \ErrorTok{lika} \ErrorTok{med}
+\end{Highlighting}
+\end{Shaded}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\end{frame}

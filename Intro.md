@@ -365,7 +365,7 @@ show collections
 [databasnamn].[collectionnamn].find()
 ```
 
-### Hämta alla dokument med formattering
+### Hämta alla dokument - med formattering
 ```json
 [databasnamn].[collectionnamn].find().pretty()
 ```
